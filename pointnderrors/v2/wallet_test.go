@@ -38,7 +38,7 @@ func assertBalance(t testing.TB, wallet Wallet, want Bitcoin) {
 func assertError(t testing.TB, got error, want string) {
 	t.Helper()
 	if got == nil {
-		t.Error("Wanted an error but didn't get one")
+		t.Fatal("Wanted an error but didn't get one")
 	}
 
 	if got.Error() != want {
