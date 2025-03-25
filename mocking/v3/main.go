@@ -33,7 +33,7 @@ const finalWord = "Go!"
 // 	fmt.Fprint(out, finalWord)
 // }
 
-// The new count down for 1.23+
+// The new count down for 1.23+ iterator usage
 func Countdown(out io.Writer, sleeper Sleeper) {
 	for i := range countDownFrom(3) {
 		fmt.Fprintln(out, i)
@@ -42,6 +42,8 @@ func Countdown(out io.Writer, sleeper Sleeper) {
 
 	fmt.Fprint(out, finalWord)
 }
+
+// This is the iterator for the above countdownfrom
 
 func countDownFrom(from int) iter.Seq[int] {
 	return func(yield func(int) bool) {
