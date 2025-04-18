@@ -1,37 +1,47 @@
 package render
 
 import (
-	"fmt"
+	"embed"
+	"html/template"
 	"io"
+
+	"github.com/gomarkdown/markdown"
+	"github.com/gomarkdown/markdown/parser"
 )
 
-type Post struct {
-	Title, Description, Body string
-	Tags                     []string
+var (
+	//go:embed "templates/*"
+	postTemplates embed.FS
+)
+
+type PostRenderer struct {
+	templ    *template.Template
+	mdParser *parser.Parser
 }
 
-func Render(w io.Writer, p Post) error {
-	_, err := fmt.Fprintf(w, "<h1>%s</h1><p>%s</p>", p.Title, p.Description)
+func NewPostRenderer() (*PostRenderer, error) {
+	templ, err := template.ParseFS(postTemplates, "templates/*.gohtml")
 	if err != nil {
-		return err
+		return nil, err
 	}
+	return &PostRenderer{templ: templ}, nil
+}
 
-	_, err = fmt.Fprint(w, "Tags: <ul>")
-	if err != nil {
-		return err
-	}
+func (r *PostRenderer) Render(w io.Writer, p Post) error {
+	return r.templ.ExecuteTemplate(w, "blog.gohtml", newPostVM(p, r))
+}
 
-	for _, tag := range p.Tags {
-		_, err = fmt.Fprintf(w, "<li>%s</li>", tag)
-		if err != nil {
-			return err
-		}
-	}
+func (r *PostRenderer) RenderIndex(w io.Writer, posts []Post) error {
+	return r.templ.ExecuteTemplate(w, "index.gohtml", posts)
+}
 
-	_, err = fmt.Fprint(w, "</ul>")
-	if err != nil {
-		return err
-	}
+type PostViewModel struct {
+	Post
+	HTMLBody template.HTML
+}
 
-	return nil
+func newPostVM(p Post, r *PostRenderer) PostViewModel {
+	vm := PostViewModel{Post: p}
+	vm.HTMLBody = template.HTML(markdown.ToHTML([]byte(p.Body), r.mdParser, nil))
+	return vm
 }

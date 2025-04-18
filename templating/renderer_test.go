@@ -2,12 +2,51 @@ package render_test
 
 import (
 	"bytes"
+	"io"
 	"testing"
 
 	render "github.com/Darshan-1012/TDD_Basics/templating"
+	approvals "github.com/approvals/go-approval-tests"
 )
 
 func TestRender(t *testing.T) {
+	var (
+		aPost = render.Post{
+			Title: "hello world",
+			Body: `# First recipe!
+Welcome to my **amazing blog**. I am going to write about my family recipes, and make sure I write a long, irrelevant and boring story about my family before you get to the actual instructions.`,
+			Description: "This is description",
+			Tags:        []string{"go", "tdd"},
+		}
+	)
+
+	postRenderer, err := render.NewPostRenderer()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	t.Run("it converts a single post into HTML", func(t *testing.T) {
+		buf := bytes.Buffer{}
+
+		if err := postRenderer.Render(&buf, aPost); err != nil {
+			t.Fatal(err)
+		}
+
+		approvals.VerifyString(t, buf.String())
+	})
+
+	t.Run("it renders an index of posts", func(t *testing.T) {
+		buf := bytes.Buffer{}
+		posts := []render.Post{{Title: "Hello World"}, {Title: "Hello World 2"}}
+
+		if err := postRenderer.RenderIndex(&buf, posts); err != nil {
+			t.Fatal(err)
+		}
+		approvals.VerifyString(t, buf.String())
+	})
+}
+
+func BenchmarkRender(b *testing.B) {
 	var (
 		aPost = render.Post{
 			Title:       "hello world",
@@ -17,19 +56,12 @@ func TestRender(t *testing.T) {
 		}
 	)
 
-	t.Run("it converts a single post into HTML", func(t *testing.T) {
-		buf := bytes.Buffer{}
-		err := render.Render(&buf, aPost)
-
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		got := buf.String()
-		want := `<h1>hello world</h1><p>This is description</p>Tags: <ul><li>go</li><li>tdd</li></ul>`
-
-		if got != want {
-			t.Errorf("\ngot '%s' \n want '%s'", got, want)
-		}
-	})
+	postRenderer, err := render.NewPostRenderer()
+	if err != nil {
+		b.Fatal(err)
+	}
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		postRenderer.Render(io.Discard, aPost)
+	}
 }
