@@ -1,5 +1,9 @@
 package generics
 
+func NewStack[T any]() *Stack[T] {
+	return new(Stack[T])
+}
+
 // type StackOfInts = Stack
 // type StackOfStrings = Stack
 

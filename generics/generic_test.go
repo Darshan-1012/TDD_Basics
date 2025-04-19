@@ -16,7 +16,7 @@ func TestAssertFunctions(t *testing.T) {
 
 func TestStack(t *testing.T) {
 	t.Run("integer stack", func(t *testing.T) {
-		myStackOfInts := new(Stack[int])
+		myStackOfInts := NewStack[int]()
 		AssertTrue(t, myStackOfInts.IsEmpty())
 
 		myStackOfInts.Push(123)
@@ -37,7 +37,7 @@ func TestStack(t *testing.T) {
 	})
 
 	t.Run("string stack", func(t *testing.T) {
-		myStackOfStrings := new(Stack[string])
+		myStackOfStrings := NewStack[string]()
 		AssertTrue(t, myStackOfStrings.IsEmpty())
 
 		myStackOfStrings.Push("123")
@@ -50,32 +50,4 @@ func TestStack(t *testing.T) {
 		AssertEqual(t, value, "123")
 		AssertTrue(t, myStackOfStrings.IsEmpty())
 	})
-}
-
-func AssertEqual[T comparable](t *testing.T, got, want T) {
-	t.Helper()
-	if got != want {
-		t.Errorf("got %v want %v ", got, want)
-	}
-}
-
-func AssertNotEqual[T comparable](t *testing.T, got, want T) {
-	t.Helper()
-	if got == want {
-		t.Errorf("Not equal %v", got)
-	}
-}
-
-func AssertTrue(t *testing.T, got bool) {
-	t.Helper()
-	if !got {
-		t.Errorf("got %v, want true", got)
-	}
-}
-
-func AssertFalse(t *testing.T, got bool) {
-	t.Helper()
-	if got {
-		t.Errorf("got %v, want false", got)
-	}
 }
